@@ -177,21 +177,21 @@
     ["d","I am not sure yet","Help me figure it out"]
   ];
   var Q5 = [
-    ["a","$100 to $199"], ["b","$200 to $499"], ["c","$500 to $999"],
-    ["d","$1,000 to $2,999"], ["e","$3,000 or more"]
+    ["a","$200 to $499"], ["b","$500 to $999"],
+    ["c","$1,000 to $2,999"], ["d","$3,000 or more"]
   ];
   var Q6 = [
-    ["a","Concept and plan","I give you an idea and a plan for you to action at your own pace"],
-    ["b","Plan and coordinate","I give you an idea and a plan, plus I give you a list of recommended vendors that I can help you get quote from"],
-    ["c","The lot","We land on an idea together, I share the plan, and coordinate logistics"]
+    ["a","The Equation","The idea and a plan, yours to bring to life at your own pace"],
+    ["b","The Formula","The idea and plan, plus my little black book of vendors I will help you get quotes from"],
+    ["c","The Full Experiment","We dream it up together, I share the plan, and I handle all the logistics"]
   ];
 
   var LABELS = {
     q1:{a:"Marriage proposal",b:"Anniversary",c:"Romantic surprise",d:"Milestone celebration",e:"Something else"},
     q3:{a:"Within 2 weeks",b:"2 to 4 weeks",c:"1 to 3 months",d:"3 months or more",e:"Flexible or not sure"},
     q4:{a:"Intimate, candlelit moment",b:"A series of magical moments",c:"Bold, cinematic grand gesture",d:"Not sure yet"},
-    q5:{a:"$100 to $199",b:"$200 to $499",c:"$500 to $999",d:"$1,000 to $2,999",e:"$3,000 or more"},
-    q6:{a:"Concept and plan",b:"Plan and coordinate",c:"The lot"}
+    q5:{a:"$200 to $499",b:"$500 to $999",c:"$1,000 to $2,999",d:"$3,000 or more"},
+    q6:{a:"The Spark",b:"The Black Book",c:"The Whole Shebang"}
   };
 
   var ORDER = ["q1","q2","q3","q4","q5","q6","q7","summary"];
@@ -275,19 +275,28 @@
   function q5Extra(){ document.getElementById("extra").innerHTML = '<div id="blockmsg"></div>'; showBlock("q5"); }
   function q6Extra(){ document.getElementById("extra").innerHTML = '<div id="blockmsg"></div>'; showBlock("q6"); }
 
+  var EXP_COST = { a:150, b:500, c:1000, d:0 };
+  var FEE = { a:150, b:350, c:700 };
+  var BANDMAX = { a:499, b:999, c:2999, d:Infinity };
+
   function budgetErr(){
-    if(A.q4 === "b" && (A.q5 === "a" || A.q5 === "b"))
-      return "A series of magical moments usually starts at $500. Lift the budget, or choose a different type of experience.";
-    if(A.q4 === "c" && (A.q5 === "a" || A.q5 === "b" || A.q5 === "c"))
+    if(!A.q4 || !A.q5) return null;
+    if(BANDMAX[A.q5] >= EXP_COST[A.q4]) return null;
+    if(A.q4 === "b")
+      return "A series of magical moments usually starts around $500. Lift the budget, or choose a different type of experience.";
+    if(A.q4 === "c")
       return "A bold, cinematic grand gesture usually starts around $1,000. Lift the budget, or choose a different type of experience.";
     return null;
   }
   function involveErr(){
-    if(A.q6 === "b" && (A.q5 === "a" || A.q5 === "b"))
-      return "This does not match your budget. Change your budget to $500 or more to use this option.";
-    if(A.q6 === "c" && (A.q5 === "a" || A.q5 === "b" || A.q5 === "c"))
-      return "This does not match your budget. Change your budget to $1,000 or more to use this option.";
-    return null;
+    if(!A.q4 || !A.q5 || !A.q6) return null;
+    var need = EXP_COST[A.q4] + FEE[A.q6];
+    if(BANDMAX[A.q5] >= need) return null;
+    var rounded = Math.round(need/50)*50;
+    var forExp = (A.q4 === "a" || A.q4 === "d") ? "" : " for " + LABELS.q4[A.q4].toLowerCase();
+    var levers = "Lift your budget, choose a lighter package";
+    if(A.q4 === "b" || A.q4 === "c") levers += ", or pick a simpler experience";
+    return LABELS.q6[A.q6] + forExp + " needs a budget of around $" + rounded.toLocaleString() + ". " + levers + ".";
   }
   function showBlock(which){
     var host = document.getElementById("blockmsg");
